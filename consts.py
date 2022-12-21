@@ -1,0 +1,16 @@
+GLOBAL = "global"
+
+INT = "int"
+CHAR = "char"
+CONST = "const"
+NIZ_CONST_CHAR = "niz(const(char))"
+
+L_ZAGRADA = "L_ZAGRADA"
+D_ZAGRADA = "D_ZAGRADA"
+IDN = "IDN"
+BROJ = "BROJ"
+ZNAK = "ZNAK"
+NIZ_ZNAKOVA = "NIZ_ZNAKOVA"
+POSTFIKSNI_IZRAZ = "<postfiksni_izraz>"
+PRIMARNI_IZRAZ = "<primarni_izraz>"
+IZRAZ = "<izraz>"
