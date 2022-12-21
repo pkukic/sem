@@ -1,3 +1,5 @@
+from consts import *
+
 def check_char(char: str):
     if len(char) == 2:
         valid = False
@@ -42,3 +44,70 @@ def check_string(string: str):
         i += 1
     
     return True
+
+
+def implicit_cast(start, target):
+    if start == target:
+        return True
+    if start == CONST_INT and target == INT:
+        return True
+    if start == INT and target == CONST_INT:
+        return True
+    if start == CONST_CHAR and target == CHAR:
+        return True
+    if start == CHAR and target == CONST_CHAR:
+        return True
+    if start == CONST_CHAR and target == INT:
+        return True
+    if start == CHAR and target == INT:
+        return True
+    if start == CHAR and target == CONST_INT:
+        return True
+    if start == CONST_CHAR and target == CONST_INT:
+        return True
+
+    if start == NIZ_CHAR and target == NIZ_CONST_CHAR:
+        return True
+    if start == NIZ_INT and target == NIZ_CONST_INT:
+        return True
+    if start == NIZ_CHAR and target == NIZ_CONST_INT:
+        return True
+    return False
+
+
+def explicit_cast(start, target):
+    if implicit_cast(start, target):
+        return True
+    if start == INT and target == CHAR:
+        return True
+    if start == INT and target == CONST_CHAR:
+        return True
+    if start == CONST_INT and target == CHAR:
+        return True
+    if start == CONST_INT and target == CONST_CHAR:
+        return True
+    return False
+
+
+def remove_niz_from_niz_x(niz_x):
+    if niz_x == NIZ_CHAR:
+        return CHAR
+    if niz_x == NIZ_INT:
+        return INT
+    if niz_x == NIZ_CONST_CHAR:
+        return CONST_CHAR
+    if niz_x == NIZ_CONST_INT:
+        return CONST_INT
+
+
+def is_const(T: str):
+    return T.startswith("const")
+
+
+def is_niz_x(niz: str):
+    return (niz == NIZ_INT or niz == NIZ_CHAR or
+            niz == NIZ_CONST_INT or niz == NIZ_CONST_CHAR)
+
+
+def make_const(x: str):
+    return "const(" + x + ")"
