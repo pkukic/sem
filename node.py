@@ -107,6 +107,16 @@ class Node():
             output = self.bin_i_izraz()
         elif (self.name == BIN_XILI_IZRAZ):
             output = self.bin_xili_izraz()
+        elif (self.name == BIN_ILI_IZRAZ):
+            output = self.bin_ili_izrazi()
+        elif (self.name == LOG_I_IZRAZ):
+            output = self.log_i_izraz()
+        elif (self.name == LOG_ILI_IZRAZ):
+            output = self.log_ili_izraz()
+        elif (self.name == IZRAZ_PRIDRUZIVANJA):
+            output = self.izraz_pridruzivanja()
+        elif (self.name == IZRAZ):
+            output = self.izraz()
         return output
     
 
@@ -281,7 +291,7 @@ class Node():
     # <unarni_operator>
     def unarni_operator(self):
         # nothing needs to be checked here
-        ...
+        return ""
     
 
     # <cast_izraz>
@@ -370,7 +380,8 @@ class Node():
             self.tip = self.children[0].tip
             self.l_izraz = self.children[0].l_izraz
 
-        elif self.right_side(ADITIVNI_IZRAZ, PLUS, MULTIPLIKATIVNI_IZRAZ) or self.right_side(ADITIVNI_IZRAZ, MINUS, MULTIPLIKATIVNI_IZRAZ):
+        elif (self.right_side(ADITIVNI_IZRAZ, PLUS, MULTIPLIKATIVNI_IZRAZ) or 
+                self.right_side(ADITIVNI_IZRAZ, MINUS, MULTIPLIKATIVNI_IZRAZ)):
             error = self.children[0].provjeri()
             if error:
                 return error
@@ -486,5 +497,127 @@ class Node():
             if not implicit_cast(self.children[2].tip, INT):
                 return self.error()
             self.tip = INT
+            self.l_izraz = 0
+        return ""
+    
+
+    # <bin_ili_izrazi>
+    def bin_ili_izrazi(self):
+        if self.right_side(BIN_XILI_IZRAZ):
+            error = self.children[0].provjeri()
+            if error:
+                return error
+            self.tip = self.children[0].tip
+            self.l_izraz = self.children[0].l_izraz
+        
+        elif self.right_side(BIN_ILI_IZRAZ, OP_BIN_ILI, BIN_XILI_IZRAZ):
+            error = self.children[0].provjeri()
+            if error:
+                return error
+            if not implicit_cast(self.children[0].tip, INT):
+                return self.error()
+            error = self.children[2].provjeri()
+            if error:
+                return error
+            if not implicit_cast(self.children[2].tip, INT):
+                return self.error()
+            self.tip = INT
+            self.l_izraz = 0
+        return ""
+    
+
+    # <log_i_izraz>
+    def log_i_izraz(self):
+        if self.right_side(BIN_ILI_IZRAZ):
+            error = self.children[0].provjeri()
+            if error:
+                return error
+            self.tip = self.children[0].tip
+            self.l_izraz = self.children[0].l_izraz
+        
+        elif self.right_side(LOG_I_IZRAZ, OP_I, BIN_ILI_IZRAZ):
+            error = self.children[0].provjeri()
+            if error:
+                return error
+            if not implicit_cast(self.children[0].tip, INT):
+                return self.error()
+            error = self.children[2].provjeri()
+            if error:
+                return error
+            if not implicit_cast(self.children[2].tip, INT):
+                return self.error()
+            self.tip = INT
+            self.l_izraz = 0
+        return ""
+    
+
+    # <log_ili_izraz>
+    def log_ili_izraz(self):
+        if self.right_side(LOG_I_IZRAZ):
+            error = self.children[0].provjeri()
+            if error:
+                return error
+            self.tip = self.children[0].tip
+            self.l_izraz = self.children[0].l_izraz
+        
+        elif self.right_side(LOG_ILI_IZRAZ, OP_ILI, LOG_I_IZRAZ):
+            error = self.children[0].provjeri()
+            if error:
+                return error
+            if not implicit_cast(self.children[0].tip, INT):
+                return self.error()
+            error = self.children[2].provjeri()
+            if error:
+                return error
+            if not implicit_cast(self.children[2].tip, INT):
+                return self.error()
+            self.tip = INT
+            self.l_izraz = 0
+        return ""
+    
+
+    # <izraz_pridruzivanja>
+    def izraz_pridruzivanja(self):
+        # TODO
+        if self.right_side(LOG_ILI_IZRAZ):
+            error = self.children[0].provjeri()
+            if error:
+                return error
+            self.tip = self.children[0].tip
+            self.l_izraz = self.children[0].l_izraz
+        
+        elif self.right_side(POSTFIKS_IZRAZ, OP_PRIDUZI, IZRAZ_PRIDRUZIVANJA):
+            error = self.children[0].provjeri()
+            if error:
+                return error
+            if self.children[0].l_izraz != 1:
+                return self.error()
+            error = self.children[2].provjeri()
+            if error:
+                return error
+            if not implicit_cast(self.children[2].tip, self.children[0].tip):
+                return self.error()
+            self.tip = self.children[0].tip
+            self.l_izraz = 0
+        return ""
+    
+
+    # <izraz>
+    def izraz(self):
+        if self.right_side(IZRAZ_PRIDRUZIVANJA):
+            error = self.children[0].provjeri()
+            if error:
+                return error
+            self.tip = self.children[0].tip
+            self.l_izraz = self.children[0].l_izraz
+        
+        elif self.right_side(IZRAZ, ZAREZ, IZRAZ_PRIDRUZIVANJA):
+            error = self.children[0].provjeri()
+            if error:
+                return error
+            error = self.children[2].provjeri()
+            if error:
+                return error
+            self.tip = self.children[2].tip
             self.l_izraz = 0
         return ""
