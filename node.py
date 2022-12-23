@@ -17,6 +17,7 @@ class Node():
     tip = None
     l_izraz = None
     tipovi = []
+    identifikatori = []
 
 
     def __init__(self, name: str, parent_node, scope_structure: ScopeStructure):
@@ -928,7 +929,55 @@ class Node():
         
         return ""
 
+    def lista_parametara(self):
+        if self.right_side(DEKLARACIJA_PARAMETRA):
+            error = self.children[0].provjeri()
+            if error:
+                return error
+            self.tipovi = [self.children[0].tip]
+            self.identifikatori = [self.children[0].name]
+        elif self.right_side(LISTA_PARAMETARA, ZAREZ, DEKLARACIJA_PARAMETRA):
+            error = self.children[0].provjeri()
+            if error:
+                return error
+            error = self.children[2].provjeri()
+            if error:
+                return error
+            if self.children[2].name in self.children[0].identifikatori:
+                return self.error()
+            self.tipovi = self.children[0].tipovi + [self.children[2].tip]
+            self.identifikatori = self.children[0].identifikatori + [self.children[2].name]
+        return ""
 
+    def deklaracija_parametra(self):
+        if self.right_side(IME_TIPA, IDN):
+            error = self.children[0].provjeri()
+            if error:
+                return error
+            if self.children[0].tip == VOID:
+                return self.error()
+            self.tip = self.children[0].tip
+            self.name = self.children[1].name
+        elif self.right_side(IME_TIPA, IDN, L_UGL_ZAGRADA, D_UGL_ZAGRADA):
+            error = self.children[0].provjeri()
+            if error:
+                return error
+            if self.children[0].tip == VOID:
+                return self.error()
+            self.tip = make_niz(self.children[0].tip)
+            self.name = self.children[1].name
+        return ""
 
-            
-
+    def lista_deklaracija(self):
+        if self.right_side(DEKLARACIJA):
+            error = self.children[0].provjeri()
+            if error:
+                return error
+        elif self.right_side(LISTA_DEKLARACIJA, DEKLARACIJA):
+            error = self.children[0].provjeri()
+            if error:
+                return error
+            error = self.children[1].provjeri()
+            if error:
+                return error
+        return ""

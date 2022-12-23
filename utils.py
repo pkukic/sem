@@ -111,3 +111,6 @@ def is_niz_x(niz: str):
 
 def make_const(x: str):
     return "const(" + x + ")"
+
+def make_niz(x: str):
+    return "niz(" + x + ")"
