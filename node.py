@@ -870,9 +870,7 @@ class Node():
             ime_tipa = self.children[0]
             idn = self.children[1]
             # ime_tipa.tip == int ili char ili void
-            if not (ime_tipa.tip == INT or \
-                    ime_tipa.tip == CHAR or \
-                    ime_tipa.tip == VOID):
+            if ime_tipa.tip not in [CHAR, INT, VOID]:
                 return self.error()
             # ne postoji prije definirana funcija IDN.ime
             if self.scope_structure.idn_name_in_scope(idn.name):
@@ -902,9 +900,7 @@ class Node():
             idn = self.children[1]
             lista_parametara = self.children[3]
             # ime_tipa.tip != CONST(T)
-            if not (ime_tipa.tip == INT or \
-                    ime_tipa.tip == CHAR or \
-                    ime_tipa.tip == VOID):
+            if ime_tipa.tip not in [CHAR, INT, VOID]:
                 return self.error()
             # ne postoji prije definirana funkcija IDN.ime
             if self.scope_structure.idn_name_in_scope(idn.name):
