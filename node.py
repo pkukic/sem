@@ -1,6 +1,7 @@
 from consts import *
 from utils import *
 from scope_structure import ScopeStructure
+from scope import Scope
 
 
 class Node():
@@ -620,4 +621,136 @@ class Node():
                 return error
             self.tip = self.children[2].tip
             self.l_izraz = 0
+        return ""
+
+
+
+
+    # <slozena_naredba>
+    def slozena_naredba(self):
+        
+        # blok bez vlastitih deklaracija - stvara se prazan Scope
+        if self.right_side(L_VIT_ZAGRADA, LISTA_NAREDBI, D_VIT_ZAGRADA):
+            error = self.children[1].provjeri()
+            if error:
+                return error
+            
+            child_scope = Scope()
+
+        # blok sa vlastitim deklaracijama - trebaju se dodati
+        # deklaracije u child scope
+        elif self.right_side(L_VIT_ZAGRADA, LISTA_DEKLARACIJA, LISTA_NAREDBI, D_VIT_ZAGRADA):
+            error = self.children[1].provjeri()
+            if error:
+                return error
+            error = self.children[2].provjeri()
+            if error:
+                return error
+            
+            # TODO
+            child_scope = Scope()
+            # declarations = self.children[1].get_declarations()
+            # child_scope.add_...
+            
+        child_scope.add_parent_scope(self.scope_structure.current_scope)
+        self.scope_structure.add_child_scope(child_scope)
+
+        return ""
+        
+    # <lista_naredbi>
+    def lista_naredbi(self):
+        if self.right_side(NAREDBA):
+            error = self.children[0].provjeri()
+            if error:
+                return error
+        elif self.right_side(LISTA_NAREDBI, NAREDBA):
+            error = self.children[0].provjeri()
+            if error:
+                return error
+            error = self.children[1].provjeri()
+            if error:
+                return error
+        return ""
+
+    # <naredba>
+    def naredba(self):
+        # sve produkcije su jedinicne
+        error = self.children[0].provjeri()
+        if error:
+            return error
+        return ""
+    
+    # <izraz_naredba>
+    def izraz_naredba(self):
+        if self.right_side(TOCKAZAREZ):
+            self.tip = INT
+        if self.right_side(IZRAZ, TOCKAZAREZ):
+            error = self.children[0].provjeri()
+            if error:
+                return error
+            self.tip = self.children[0].tip
+
+    # <naredba_grananja>
+    def naredba_grananja(self):
+        if self.right_side(KR_IF, L_ZAGRADA, IZRAZ, D_ZAGRADA, NAREDBA):
+            error = self.children[2].provjeri()
+            if error:
+                return error
+            if not implicit_cast(self.children[2].tip, INT):
+                return self.error()
+            error = self.children[4].provjeri()
+            if error:
+                return error
+        elif self.right_side(KR_IF, L_ZAGRADA, IZRAZ, D_ZAGRADA, NAREDBA, KR_ELSE, NAREDBA):
+            error = self.children[2].provjeri()
+            if error:
+                return error
+            if not implicit_cast(self.children[2].tip, INT):
+                return self.error()
+            error = self.children[4].provjeri()
+            if error:
+                return error
+            error = self.children[6].provjeri()
+            if error:
+                return error
+        return ""
+
+    # <naredba_petlje>
+    def naredba_petlje(self):
+        if self.right_side(KR_WHILE, L_ZAGRADA, IZRAZ, D_ZAGRADA, NAREDBA):
+            error = self.children[2].provjeri()
+            if error:
+                return error
+            if not implicit_cast(self.children[2].tip, INT):
+                return self.error()
+            error = self.children[4].provjeri()
+            if error:
+                return error
+        elif self.right_side(KR_FOR, L_ZAGRADA, IZRAZ_NAREDBA, IZRAZ_NAREDBA, D_ZAGRADA, NAREDBA):
+            error = self.children[2].provjeri()
+            if error:
+                return error
+            error = self.children[3].provjeri()
+            if error:
+                return error
+            if not implicit_cast(self.children[3].tip, INT):
+                return self.error()
+            error = self.children[5].provjeri()
+            if error:
+                return error
+        elif self.right_side(KR_FOR, L_ZAGRADA, IZRAZ_NAREDBA, IZRAZ_NAREDBA, IZRAZ, D_ZAGRADA, NAREDBA):
+            error = self.children[2].provjeri()
+            if error:
+                return error
+            error = self.children[3].provjeri()
+            if error:
+                return error
+            if not implicit_cast(self.children[3].tip, INT):
+                return self.error()
+            error = self.children[4].provjeri()
+            if error:
+                return error
+            error = self.children[5].provjeri()
+            if error:
+                return error
         return ""
