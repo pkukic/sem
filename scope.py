@@ -9,8 +9,9 @@ class Scope():
     def __init__(self, parent_scope, scope_type):
         self.parent_scope = parent_scope
         self.child_scope = None
+        self.declarations = {}
+        self.definitions = {}
         self.idn_values = []
-        self.function_values = []
         self.scope_type = scope_type
         return
     
@@ -31,13 +32,14 @@ class Scope():
         return
     
 
-    def add_idn(self, idn):
+    def add_definition(self, idn, type):
+        self.definitions[idn] = type
         self.idn_values.append(idn)
         return
     
-
-    def add_function(self, func):
-        self.function_values.append(func)
+    def add_declaration(self, idn, type):
+        self.declarations[idn] = type
+        self.idn_values.append(idn)
         return
     
 

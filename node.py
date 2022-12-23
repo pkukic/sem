@@ -37,6 +37,7 @@ class Node():
         self.tip = None
         self.l_izraz = None
         self.tipovi = []
+        self.identifikatori = []
         return
     
 
@@ -640,7 +641,6 @@ class Node():
 
     # <izraz_pridruzivanja>
     def izraz_pridruzivanja(self):
-        # TODO
         if self.right_side(LOG_ILI_IZRAZ):
             error = self.children[0].provjeri()
             if error:
@@ -686,18 +686,23 @@ class Node():
 
 
     # <slozena_naredba>
-    def slozena_naredba(self):
+    def slozena_naredba(self, lista_identifikatora=None, lista_tipova=None):
+        # u oba slucaja ce se tu stvarati prazan scope
+        # s tim da ce se puniti sa deklaracijama kad dodje do LISTA_DEKLARACIJA
+        # ako se provjerava tijelo funkcije, onda se parametri funkcije
+        # moraju spremiti u scope tijela prvo.
+        if lista_identifikatora is not None and lista_tipova is not None:
+            child_scope = Scope(self.scope_structure.current_scope, LOCAL)
+            self.scope_structure.add_child_scope(child_scope)
+            for (idn, tip) in zip(lista_identifikatora, lista_tipova):
+                self.scope_structure.add_declaration(idn, tip)
         
-        # blok bez vlastitih deklaracija - stvara se prazan Scope
         if self.right_side(L_VIT_ZAGRADA, LISTA_NAREDBI, D_VIT_ZAGRADA):
             error = self.children[1].provjeri()
             if error:
                 return error
-            
-            child_scope = Scope()
-
-        # blok sa vlastitim deklaracijama - trebaju se dodati
-        # deklaracije u child scope
+            child_scope = Scope(self.scope_structure.current_scope, LOCAL)
+            self.scope_structure.add_child_scope(child_scope)
         elif self.right_side(L_VIT_ZAGRADA, LISTA_DEKLARACIJA, LISTA_NAREDBI, D_VIT_ZAGRADA):
             error = self.children[1].provjeri()
             if error:
@@ -705,15 +710,8 @@ class Node():
             error = self.children[2].provjeri()
             if error:
                 return error
-            
-            # TODO: dobiti deklaracije od child
-            child_scope = Scope()
-            # declarations = self.children[1].get_declarations()
-            # child_scope.add_...
-            
-        child_scope.add_parent_scope(self.scope_structure.current_scope)
-        self.scope_structure.add_child_scope(child_scope)
-
+            child_scope = Scope(self.scope_structure.current_scope, LOCAL)
+            self.scope_structure.add_child_scope(child_scope)
         return ""
         
     # <lista_naredbi>
@@ -862,14 +860,72 @@ class Node():
             error = self.children[0].provjeri()
             if error:
                 return error
+            ime_tipa = self.children[0]
+            idn = self.children[1]
             # ime_tipa.tip == int ili char ili void
-            if not (self.children[0].tip == INT or \
-                    self.children[0].tip == CHAR or \
-                    self.children[0].tip == VOID):
+            if not (ime_tipa.tip == INT or \
+                    ime_tipa.tip == CHAR or \
+                    ime_tipa.tip == VOID):
                 return self.error()
             # ne postoji prije definirana funcija IDN.ime
+            if self.scope_structure.idn_name_in_scope(idn.name):
+                return self.error()
             # ako postoji deklaracija imena IDN.ime u globalnom djelokrugu
             # onda je pripadni tip de deklaracije funkcija(void -> <ime_tipa>.tip)
+            current_return_type = ime_tipa.tip
+            global_scope = self.scope_structure.global_scope()
+            if idn.name in global_scope.declarations:
+                required_type = global_scope.declarations[idn.name]
+                if required_type != FunctionType([VOID], current_return_type):
+                    self.error()
             # zabiljezi definiciju i deklaraciju funkcije
+            self.scope_structure.add_definition(idn.name, FunctionType([VOID], current_return_type))
+            self.scope_structure.add_declaration(idn.name, FunctionType([VOID], current_return_type))
             # provjeri(<slozena_naredba>)
+            error = self.children[5].provjeri()
+            if error:
+                return error
+
+        elif self.right_side(IME_TIPA, IDN, L_ZAGRADA, LISTA_PARAMETARA, D_ZAGRADA, SLOZENA_NAREDBA):
+            error = self.children[0].provjeri()
+            # provjeri ime tipa
+            if error:
+                return error
+            ime_tipa = self.children[0]
+            idn = self.children[1]
+            lista_parametara = self.children[3]
+            # ime_tipa.tip != CONST(T)
+            if not (ime_tipa.tip == INT or \
+                    ime_tipa.tip == CHAR or \
+                    ime_tipa.tip == VOID):
+                return self.error()
+            # ne postoji prije definirana funkcija IDN.ime
+            if self.scope_structure.idn_name_in_scope(idn.name):
+                return self.error()
+            # provjeri(lista_parametara)
+            error = lista_parametara.provjeri()
+            if error:
+                return error
+            # ako postoji deklaracija IDN.ime u globalnom djelokrugu,
+            # onda je pripadni tip funkcija(lista_param.tipovi -> ime_tipa.tip)
+            current_return_type = ime_tipa.tip
+            current_argument_types = lista_parametara.tipovi
+            if idn.name in global_scope.declarations:
+                required_type = global_scope.declarations[idn.name]
+                if required_type != FunctionType(current_argument_types, current_return_type):
+                    return self.error()
+            # zabiljezi definiciju i deklaraciju funkcije
+            self.scope_structure.add_definition(idn.name, FunctionType(current_argument_types, current_return_type))
+            self.scope_structure.add_declaration(idn.name, FunctionType(current_argument_types, current_return_type))
+            # provjeri(slozena_naredba) uz parametre funkcije
+            # koristeci <lista_param>.tipovi i <lista_param>.imena
+            error = self.children[5].provjeri(lista_parametara.identifikatori, lista_parametara.tipovi)
+            if error:
+                return error
+        
+        return ""
+
+
+
+            
 

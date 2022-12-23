@@ -1,4 +1,5 @@
 GLOBAL = "global"
+LOCAL = "local"
 
 INT = "int"
 CHAR = "char"
