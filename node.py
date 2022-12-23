@@ -174,6 +174,12 @@ class Node():
             output = self.vanjska_deklaracija()
         elif (self.name == DEFINICIJA_FUNKCIJE):
             output = self.definicija_funkcije()
+        elif (self.name == LISTA_PARAMETARA):
+            output = self.lista_parametara()
+        elif (self.name == DEKLARACIJA_PARAMETRA):
+            output = self.deklaracija_parametra()
+        elif (self.name == LISTA_DEKLARACIJA):
+            output = self.lista_deklaracija()
            
         return output
     
