@@ -113,7 +113,7 @@ class Node():
         return output_string
     
 
-    def provjeri(self):
+    def provjeri(self, lista_identifikatora=None, lista_tipova=None):
         output = ""
         if (self.name == PRIMARNI_IZRAZ):
             output = self.primarni_izraz()
@@ -153,7 +153,7 @@ class Node():
             output = self.izraz()
 
         elif (self.name == SLOZENA_NAREDBA):
-            output = self.slozena_naredba()
+            output = self.slozena_naredba(lista_identifikatora, lista_tipova)
         elif (self.name == LISTA_NAREDBI):
             output = self.lista_naredbi()
         elif (self.name == NAREDBA):
@@ -166,6 +166,13 @@ class Node():
             output = self.naredba_petlje()
         elif (self.name == NAREDBA_SKOKA):
             output = self.naredba_skoka()
+
+        elif (self.name == PRIJEVODNA_JEDINICA):
+            output = self.prijevodna_jedinica()
+        elif (self.name == VANJSKA_DEKLARACIJA):
+            output = self.vanjska_deklaracija()
+        elif (self.name == DEFINICIJA_FUNKCIJE):
+            output = self.definicija_funkcije()
            
         return output
     
