@@ -2,6 +2,7 @@ from consts import *
 from utils import *
 from scope_structure import ScopeStructure
 from scope import Scope
+from FunctionType import FunctionType
 
 
 class Node():
@@ -96,8 +97,7 @@ class Node():
             if p.name not in allowed_parents:
                 return None
             return p.nesting_function_type()
-        # TODO: nova klasa TipFunkcije za funkcije?
-        return p.children[0].tip.return_value
+        return p.children[0].tip.return_type
             
 
     # very important function!!
@@ -238,8 +238,12 @@ class Node():
             error = self.children[0].provjeri()
             if error:
                 return error
-            # TODO
-            ...
+            ft = self.children[0].tip
+            if not ft.arguments_types == [VOID]:
+                self.error()
+            self.tip = ft.return_type
+            self.l_izraz = 0
+            return ""
 
         elif self.right_side(POSTFIKS_IZRAZ, L_ZAGRADA, LISTA_ARGUMENATA, D_ZAGRADA):
             error = self.children[0].provjeri()
@@ -248,8 +252,17 @@ class Node():
             error = self.children[2].provjeri()
             if error:
                 return error
-            # TODO
-            ...
+            required_types_list = self.children[0].arguments_types
+            current_types_list = self.children[2].tipovi
+            n = len(required_types_list)
+            m = len(current_types_list)
+            if n != m:
+                return self.error()
+            for i in range(n):
+                if not implicit_cast(self.current_types_list[i], self.required_types_list[i]):
+                    self.error()
+            return ""
+
 
         elif self.right_side(POSTFIKS_IZRAZ, OP_INC):
             error = self.children[0].provjeri()
@@ -672,8 +685,6 @@ class Node():
         return ""
 
 
-
-
     # <slozena_naredba>
     def slozena_naredba(self):
         
@@ -819,3 +830,46 @@ class Node():
             if (t is None) or (not implicit_cast(self.children[1], t)):
                 return self.error()
         return ""
+
+    
+    # <prijevodna_jedinica>
+    def prijevodna_jedinica(self):
+        if self.right_side(VANJSKA_DEKLARACIJA):
+            error = self.children[0].provjeri()
+            if error:
+                return error
+        if self.right_side(PRIJEVODNA_JEDINICA, VANJSKA_DEKLARACIJA):
+            error = self.children[0].provjeri()
+            if error:
+                return error
+            error = self.children[1].provjeri()
+            if error:
+                return error
+        return ""
+
+    # <vanjska_deklaracija>    
+    def vanjska_deklaracija(self):
+        error = self.children[0].provjeri()
+        if error:
+            return error
+        return ""
+    
+
+    # <definicija_funkcije>
+    def definicija_funkcije(self):
+        if self.right_side(IME_TIPA, IDN, L_ZAGRADA, KR_VOID, D_ZAGRADA, SLOZENA_NAREDBA):
+            # provjeri ime tipa
+            error = self.children[0].provjeri()
+            if error:
+                return error
+            # ime_tipa.tip == int ili char ili void
+            if not (self.children[0].tip == INT or \
+                    self.children[0].tip == CHAR or \
+                    self.children[0].tip == VOID):
+                return self.error()
+            # ne postoji prije definirana funcija IDN.ime
+            # ako postoji deklaracija imena IDN.ime u globalnom djelokrugu
+            # onda je pripadni tip de deklaracije funkcija(void -> <ime_tipa>.tip)
+            # zabiljezi definiciju i deklaraciju funkcije
+            # provjeri(<slozena_naredba>)
+
