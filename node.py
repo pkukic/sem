@@ -66,7 +66,39 @@ class Node():
             if self.children[i].name != args[i]:
                 return False
         return True
+
+
+    def in_loop(self):
+        p = self.parent_node
+        allowed_parents = [
+            NAREDBA, 
+            LISTA_NAREDBI, 
+            SLOZENA_NAREDBA, 
+            NAREDBA_GRANANJA
+        ]
+        if p.name != NAREDBA_PETLJE:
+            if p.name not in allowed_parents:
+                return False
+            return p.in_loop()
+        return True
+
     
+    def nesting_function_type(self):
+        p = self.parent_node
+        allowed_parents = [
+            NAREDBA,
+            LISTA_NAREDBI,
+            SLOZENA_NAREDBA,
+            NAREDBA_GRANANJA,
+            NAREDBA_PETLJE
+        ]
+        if p.name != DEFINICIJA_FUNKCIJE:
+            if p.name not in allowed_parents:
+                return None
+            return p.nesting_function_type()
+        # TODO: nova klasa TipFunkcije za funkcije?
+        return p.children[0].tip.return_value
+            
 
     # very important function!!
     # call it if an error is spotted
@@ -118,6 +150,22 @@ class Node():
             output = self.izraz_pridruzivanja()
         elif (self.name == IZRAZ):
             output = self.izraz()
+
+        elif (self.name == SLOZENA_NAREDBA):
+            output = self.slozena_naredba()
+        elif (self.name == LISTA_NAREDBI):
+            output = self.lista_naredbi()
+        elif (self.name == NAREDBA):
+            output = self.naredba()
+        elif (self.name == IZRAZ_NAREDBA):
+            output = self.izraz_naredba()
+        elif (self.name == NAREDBA_GRANANJA):
+            output = self.naredba_grananja()
+        elif (self.name == NAREDBA_PETLJE):
+            output = self.naredba_petlje()
+        elif (self.name == NAREDBA_SKOKA):
+            output = self.naredba_skoka()
+           
         return output
     
 
@@ -647,7 +695,7 @@ class Node():
             if error:
                 return error
             
-            # TODO
+            # TODO: dobiti deklaracije od child
             child_scope = Scope()
             # declarations = self.children[1].get_declarations()
             # child_scope.add_...
@@ -753,4 +801,21 @@ class Node():
             error = self.children[5].provjeri()
             if error:
                 return error
+        return ""
+
+    # <naredba_skoka>
+    def naredba_skoka(self):
+        if self.right_side(KR_CONTINUE, TOCKAZAREZ) or self.right_side(KR_BREAK, TOCKAZAREZ):
+            if not self.in_loop():
+                return self.error()
+        if self.right_side(KR_RETURN, TOCKAZAREZ):
+            if self.nesting_function_type() != VOID:
+                return self.error()
+        if self.right_side(KR_RETURN, IZRAZ, TOCKAZAREZ):
+            error = self.children[1].provjeri()
+            if error:
+                return error
+            t = self.nesting_function_type()
+            if (t is None) or (not implicit_cast(self.children[1], t)):
+                return self.error()
         return ""
