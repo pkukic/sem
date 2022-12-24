@@ -20,6 +20,7 @@ class Node():
     tipovi = []
     identifikatori = []
     vrijednost = None
+    br_elem = None
 
 
     def __init__(self, name: str, parent_node, scope_structure: ScopeStructure):
@@ -43,6 +44,7 @@ class Node():
         self.tipovi = []
         self.identifikatori = []
         self.vrijednost = None
+        self.br_elem = None
         return
     
 
@@ -104,6 +106,16 @@ class Node():
                 return None
             return p.nesting_function_type()
         return p.children[0].tip.return_type
+
+
+    def goes_to_niz_znakova(self):
+        if self.name == NIZ_ZNAKOVA:
+            return (True, self.br_elem)
+        if self.leaf_node:
+            return (False, None)
+        if len(self.children) > 1:
+            return (False, None)
+        return self.children[0].goes_to_niz_znakova()
             
 
     # very important function!!
@@ -184,7 +196,20 @@ class Node():
             output = self.deklaracija_parametra()
         elif (self.name == LISTA_DEKLARACIJA):
             output = self.lista_deklaracija()
-           
+
+        elif (self.name == DEKLARACIJA):
+            output = self.deklaracija()
+        elif (self.name == LISTA_INIT_DEKLARATORA):
+            output = self.lista_init_deklaratora(ntip)
+        elif (self.name == INIT_DEKLARATOR):
+            output = self.init_deklarator(ntip)
+        elif (self.name == IZRAVNI_DEKLARATOR):
+            output = self.izravni_deklarator(ntip)
+        elif (self.name == INICIJALIZATOR):
+            output = self.inicijalizator()        
+        elif (self.name == LISTA_IZRAZA_PRIDRUZIVANJA):
+            output = self.lista_izraza_pridruzivanja()
+
         return output
     
 
@@ -688,6 +713,17 @@ class Node():
             error = self.children[0].provjeri()
             if error:
                 return error
+    def in_loop(self):
+        p = self.parent_node
+        allowed_parents = [
+            NAREDBA, 
+            LISTA_NAREDBI, 
+            SLOZENA_NAREDBA, 
+            NAREDBA_GRANANJA
+        ]
+        if p.name != NAREDBA_PETLJE:
+            if p.name not in allowed_parents:
+                return F
             self.tip = self.children[0].tip
             self.l_izraz = self.children[0].l_izraz
         
@@ -999,7 +1035,7 @@ class Node():
             if error:
                 return error
             current_ntip = self.children[0].tip
-            error = self.children[1].provjeri(current_ntip)
+            error = self.children[1].provjeri(ntip=current_ntip)
             if error:
                 return error
         return ""
@@ -1010,14 +1046,14 @@ class Node():
         self.ntip = ntip
         current_ntip = self.ntip
         if self.right_side(INIT_DEKLARATOR):
-            error = self.children[0].provjeri(current_ntip)
+            error = self.children[0].provjeri(ntip=current_ntip)
             if error:
                 return error
         elif self.right_side(LISTA_INIT_DEKLARATORA, ZAREZ, INIT_DEKLARATOR):
-            error = self.children[0].provjeri(current_ntip)
+            error = self.children[0].provjeri(ntip=current_ntip)
             if error:
                 return error
-            error = self.children[2].provjeri(current_ntip)
+            error = self.children[2].provjeri(ntip=current_ntip)
             if error:
                 return error
         return ""
@@ -1028,7 +1064,7 @@ class Node():
         self.ntip = ntip
         current_ntip = self.ntip
         if self.right_side(IZRAVNI_DEKLARATOR):
-            error = self.children[0].provjeri(current_ntip)
+            error = self.children[0].provjeri(ntip=current_ntip)
             if error:
                 return error
             if is_const_x(self.children[0].tip):
@@ -1036,7 +1072,7 @@ class Node():
             if is_niz_x(self.children[0].tip):
                 return self.error()
         elif self.right_side(IZRAVNI_DEKLARATOR, OP_PRIDUZI, INICIJALIZATOR):
-            error = self.children[0].provjeri(current_ntip)
+            error = self.children[0].provjeri(ntip=current_ntip)
             if error:
                 return error
             error = self.children[2].provjeri()
@@ -1107,4 +1143,42 @@ class Node():
                     FunctionType(self.children[2].tipovi, self.ntip))
         return ""
 
+    def inicijalizator(self):
+        if self.right_side(IZRAZ_PRIDRUZIVANJA):
+            error = self.children[0].provjeri()
+            if error:
+                return error
+            flag, array_length = self.children[0].goes_to_niz_znakova()
+            if flag:
+                self.br_elem = array_length + 1
+                self.tipovi = [CHAR] * self.br_elem
+            else:
+                self.tip = self.children[0].tip
+        elif self.right_side(L_VIT_ZAGRADA, LISTA_IZRAZA_PRIDRUZIVANJA, D_VIT_ZAGRADA):
+            error = self.children[1].provjeri()
+            if error: 
+                return error
+            self.br_elem = self.children[1].br_elem
+            self.tipovi = self.children[1].tipovi
+        return ""
+    
+    
+    def lista_izraza_pridruzivanja(self):
+        if self.right_side(IZRAZ_PRIDRUZIVANJA):
+            error = self.children[0].provjeri()
+            if error:
+                return error
+            self.tipovi = [self.children[0].tip]
+            self.br_elem = 1
+        elif self.right_side(LISTA_IZRAZA_PRIDRUZIVANJA, ZAREZ, IZRAZ_PRIDRUZIVANJA):
+            error = self.children[0].provjeri()
+            if error:
+                return error
+            error = self.children[1].provjeri()
+            if error:
+                return error
+            self.tipovi = self.children[0].tipovi + [self.children[2].tip]
+            self.br_elem = self.children[0].br_elem + 1
+
+    
             
