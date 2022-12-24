@@ -100,7 +100,14 @@ def remove_niz_from_niz_x(niz_x):
         return CONST_INT
 
 
-def is_const(T: str):
+def remove_const_from_const_x(const_x):
+    if const_x == CONST_CHAR:
+        return CHAR
+    if const_x == CONST_INT:
+        return INT
+
+
+def is_const_x(T: str):
     return T.startswith("const")
 
 

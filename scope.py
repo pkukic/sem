@@ -50,3 +50,10 @@ class Scope():
         if self.parent_scope:
             return self.parent_scope.idn_name_in_scope(name)
         return False
+
+    def type_of_idn_in_scope(self, name):
+        if name in self.declarations:
+            return self.declarations[name]
+        elif name in self.definitions:
+            return self.definitions[name]
+        return self.parent_scope.type_of_idn_in_scope(name)

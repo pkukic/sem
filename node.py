@@ -15,9 +15,11 @@ class Node():
 
     # params for semantic analysis
     tip = None
+    ntip = None
     l_izraz = None
     tipovi = []
     identifikatori = []
+    vrijednost = None
 
 
     def __init__(self, name: str, parent_node, scope_structure: ScopeStructure):
@@ -36,9 +38,11 @@ class Node():
             self.leaf_node = True
         
         self.tip = None
+        self.ntip = None
         self.l_izraz = None
         self.tipovi = []
         self.identifikatori = []
+        self.vrijednost = None
         return
     
 
@@ -114,7 +118,7 @@ class Node():
         return output_string
     
 
-    def provjeri(self, lista_identifikatora=None, lista_tipova=None):
+    def provjeri(self, lista_identifikatora=None, lista_tipova=None, ntip=None):
         output = ""
         if (self.name == PRIMARNI_IZRAZ):
             output = self.primarni_izraz()
@@ -244,7 +248,7 @@ class Node():
                 return self.error()
             
             self.tip = remove_niz_from_niz_x(self.children[0].tip)
-            if is_const(self.tip):
+            if is_const_x(self.tip):
                 self.l_izraz = 0
             else:
                 self.l_izraz = 1
@@ -876,8 +880,8 @@ class Node():
                 return error
             ime_tipa = self.children[0]
             idn = self.children[1]
-            # ime_tipa.tip == int ili char ili void
-            if ime_tipa.tip not in [CHAR, INT, VOID]:
+            # ime_tipa.tip != const(T)
+            if is_const_x(ime_tipa.tip):
                 return self.error()
             # ne postoji prije definirana funcija IDN.ime
             if self.scope_structure.idn_name_in_scope(idn.name):
@@ -907,7 +911,7 @@ class Node():
             idn = self.children[1]
             lista_parametara = self.children[3]
             # ime_tipa.tip != CONST(T)
-            if ime_tipa.tip not in [CHAR, INT, VOID]:
+            if is_const_x(ime_tipa.tip):
                 return self.error()
             # ne postoji prije definirana funkcija IDN.ime
             if self.scope_structure.idn_name_in_scope(idn.name):
@@ -929,7 +933,8 @@ class Node():
             self.scope_structure.add_declaration(idn.name, FunctionType(current_argument_types, current_return_type))
             # provjeri(slozena_naredba) uz parametre funkcije
             # koristeci <lista_param>.tipovi i <lista_param>.imena
-            error = self.children[5].provjeri(lista_parametara.identifikatori, lista_parametara.tipovi)
+            error = self.children[5].provjeri(lista_identifikatora=lista_parametara.identifikatori, 
+                lista_tipova=lista_parametara.tipovi)
             if error:
                 return error
         
@@ -987,3 +992,119 @@ class Node():
             if error:
                 return error
         return ""
+
+    def deklaracija(self):
+        if self.right_side(IME_TIPA, LISTA_INIT_DEKLARATORA, TOCKAZAREZ):
+            error = self.children[0].provjeri()
+            if error:
+                return error
+            current_ntip = self.children[0].tip
+            error = self.children[1].provjeri(current_ntip)
+            if error:
+                return error
+        return ""
+    
+    def lista_init_deklaratora(self, ntip):
+        if ntip is None:
+            return self.error()
+        self.ntip = ntip
+        current_ntip = self.ntip
+        if self.right_side(INIT_DEKLARATOR):
+            error = self.children[0].provjeri(current_ntip)
+            if error:
+                return error
+        elif self.right_side(LISTA_INIT_DEKLARATORA, ZAREZ, INIT_DEKLARATOR):
+            error = self.children[0].provjeri(current_ntip)
+            if error:
+                return error
+            error = self.children[2].provjeri(current_ntip)
+            if error:
+                return error
+        return ""
+    
+    def init_deklarator(self, ntip):
+        if ntip is None:
+            return self.error()
+        self.ntip = ntip
+        current_ntip = self.ntip
+        if self.right_side(IZRAVNI_DEKLARATOR):
+            error = self.children[0].provjeri(current_ntip)
+            if error:
+                return error
+            if is_const_x(self.children[0].tip):
+                return self.error()
+            if is_niz_x(self.children[0].tip):
+                return self.error()
+        elif self.right_side(IZRAVNI_DEKLARATOR, OP_PRIDUZI, INICIJALIZATOR):
+            error = self.children[0].provjeri(current_ntip)
+            if error:
+                return error
+            error = self.children[2].provjeri()
+            if error:
+                return error
+            izravni_deklarator_type = self.children[0].tip
+            if not is_niz_x(izravni_deklarator_type):
+                stripped_type = izravni_deklarator_type
+                if is_const_x(stripped_type):
+                    stripped_type = remove_const_from_const_x(stripped_type)
+                if not implicit_cast(self.children[2].tip, stripped_type):
+                    return self.error()
+            elif is_niz_x(izravni_deklarator_type):
+                stripped_type = remove_niz_from_niz_x(izravni_deklarator_type)
+                if is_const_x(stripped_type):
+                    stripped_type = remove_const_from_const_x(stripped_type)
+                if not (self.children[2].br_elem <= self.children[0].br_elem):
+                    return self.error()
+                for u in self.children[2].tipovi:
+                    if not implicit_cast(u, stripped_type):
+                        return self.error()
+        return ""
+    
+    def izravni_deklarator(self, ntip):
+        if ntip is None:
+            return self.error()
+        self.ntip = ntip
+        if self.right_side(IDN):
+            if self.ntip == VOID:
+                return self.error()
+            if self.scope_structure.idn_name_in_scope(self.children[0].name):
+                return self.error()
+            self.scope_structure.add_declaration(self.children[0].name, self.ntip)
+            self.tip = self.ntip
+        elif self.right_side(IDN, L_UGL_ZAGRADA, BROJ, D_UGL_ZAGRADA):
+            if self.ntip == VOID:
+                return self.error()
+            if self.scope_structure.idn_name_in_scope(self.children[0].name):
+                return self.error()
+            if self.children[2].vrijednost is None:
+                return self.error()
+            if self.children[2].vrijednost <= 0:
+                return self.error()
+            elif self.children[2].vrijednost > 1024:
+                return self.error()
+            array_type = make_niz(self.ntip)
+            self.scope_structure.add_declaration(self.children[0].name, array_type)
+            self.tip = array_type
+            self.br_elem = self.children[2].vrijednost
+        elif self.right_side(IDN, L_ZAGRADA, KR_VOID, D_ZAGRADA):
+            if self.scope_structure.idn_name_in_scope(self.children[0].name):
+                required_type = self.scope_structure.type_of_idn_in_scope(self.children[0].name)
+                if required_type != FunctionType([VOID], self.ntip):
+                    return self.error()
+            else:
+                self.scope_structure.add_declaration(self.children[0].name, 
+                    FunctionType([VOID], self.ntip))
+        elif self.right_side(IDN, L_ZAGRADA, LISTA_PARAMETARA, D_ZAGRADA):
+            error = self.children[2].provjeri()
+            if error:
+                return error
+            if self.scope_structure.idn_name_in_scope(self.children[0].name):
+                required_type = self.scope_structure.type_of_idn_in_scope(self.children[0].name)
+                if required_type != FunctionType(self.children[2].tipovi, self.ntip):
+                    return self.error()
+            else:
+                self.scope_structure.add_declaration(self.children[0].name, 
+                    FunctionType(self.children[2].tipovi, self.ntip))
+        return ""
+
+            

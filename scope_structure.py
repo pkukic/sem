@@ -13,7 +13,9 @@ class ScopeStructure():
 
     def idn_name_in_scope(self, name: str):
         return self.current_scope.idn_name_in_scope(name)
-    
+        
+    def type_of_idn_in_scope(self, name):
+        return self.current_scope.type_of_idn_in_scope(name)
 
     def add_definition(self, idn, type):
         self.current_scope.add_definition(idn, type)
