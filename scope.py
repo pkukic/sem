@@ -1,3 +1,5 @@
+from FunctionType import FunctionType
+
 class Scope():
 
     parent_scope = None
@@ -57,3 +59,17 @@ class Scope():
         elif name in self.definitions:
             return self.definitions[name]
         return self.parent_scope.type_of_idn_in_scope(name)
+
+    def function_definitions(self):
+        local_function_definitions = {k: v for (k, v) in self.definitions.items() if isinstance(self.definitions[k], FunctionType)}
+        if not self.parent_scope:
+            return local_function_definitions
+        return local_function_definitions | self.parent_scope.function_definitions()
+
+    def function_declarations(self):
+        local_function_declarations = {k: v for (k, v) in self.definitions.items() if isinstance(self.declarations[k], FunctionType)}
+        if not self.parent_scope:
+            return local_function_declarations
+        return local_function_declarations | self.parent_scope.function_definitions()
+
+
