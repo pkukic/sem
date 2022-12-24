@@ -723,7 +723,7 @@ class Node():
         ]
         if p.name != NAREDBA_PETLJE:
             if p.name not in allowed_parents:
-                return F
+                return False
             self.tip = self.children[0].tip
             self.l_izraz = self.children[0].l_izraz
         
