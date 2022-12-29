@@ -45,6 +45,9 @@ class Node():
         self.identifikatori = []
         self.vrijednost = None
         self.br_elem = None
+
+        if self.name == BROJ:
+            self.vrijednost = int(self.lex)
         return
     
 
@@ -1093,14 +1096,14 @@ class Node():
         if self.right_side(IDN):
             if self.ntip == VOID:
                 return self.error()
-            if self.scope_structure.idn_name_in_scope(self.children[0].lex):
+            if self.scope_structure.idn_name_in_local_scope(self.children[0].lex):
                 return self.error()
             self.scope_structure.add_declaration(self.children[0].lex, self.ntip)
             self.tip = self.ntip
         elif self.right_side(IDN, L_UGL_ZAGRADA, BROJ, D_UGL_ZAGRADA):
             if self.ntip == VOID:
                 return self.error()
-            if self.scope_structure.idn_name_in_scope(self.children[0].lex):
+            if self.scope_structure.idn_name_in_local_scope(self.children[0].lex):
                 return self.error()
             if self.children[2].vrijednost is None:
                 return self.error()

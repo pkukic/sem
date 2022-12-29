@@ -55,6 +55,12 @@ class Scope():
         if self.parent_scope:
             return self.parent_scope.idn_name_in_scope(name)
         return False
+    
+    def idn_name_in_local_scope(self, name: str):
+        for value in self.idn_values:
+            if value == name:
+                return True
+        return False
 
     def type_of_idn_in_scope(self, name):
         if name in self.declarations:
