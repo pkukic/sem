@@ -218,7 +218,8 @@ class Node():
         if self.right_side(IDN):
             if not self.scope_structure.idn_name_in_scope(self.children[0].lex):
                 return self.error()
-            self.tip = self.children[0].tip
+
+            self.tip = self.scope_structure.type_of_idn_in_scope(self.children[0].lex)
             self.l_izraz = self.children[0].l_izraz
 
         elif self.right_side(BROJ):

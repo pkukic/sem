@@ -4,5 +4,5 @@ class FunctionType:
         self.return_type = return_type
 
     def __eq__(self, other):
-        return self.arguments_types == other.arguments_types and \
+        return isinstance(other, FunctionType) and self.arguments_types == other.arguments_types and \
             self.return_type == other.return_type
