@@ -223,7 +223,7 @@ class Node():
                 return self.error()
 
             self.tip = self.scope_structure.type_of_idn_in_scope(self.children[0].lex)
-            self.l_izraz = self.children[0].l_izraz
+            self.l_izraz = self.scope_structure.l_izraz_of_idn_in_scope(self.children[0].lex)
 
         elif self.right_side(BROJ):
             # value is in int range
@@ -233,7 +233,7 @@ class Node():
             self.l_izraz = 0
 
         elif self.right_side(ZNAK):
-            if not check_char(self.children[0].lex):
+            if not check_char(self.children[0].lex):    
                 return self.error()
             self.tip = CHAR
             self.l_izraz = 0
@@ -1100,6 +1100,7 @@ class Node():
             if self.scope_structure.idn_name_in_local_scope(self.children[0].lex):
                 return self.error()
             self.scope_structure.add_declaration(self.children[0].lex, self.ntip)
+            self.scope_structure.add_l_izraz(self.children[0].lex, 1)
             self.tip = self.ntip
         elif self.right_side(IDN, L_UGL_ZAGRADA, BROJ, D_UGL_ZAGRADA):
             if self.ntip == VOID:
@@ -1114,6 +1115,7 @@ class Node():
                 return self.error()
             array_type = make_niz(self.ntip)
             self.scope_structure.add_declaration(self.children[0].lex, array_type)
+            self.scope_structure.add_l_izraz(self.children[0].lex, 1)
             self.tip = array_type
             self.br_elem = self.children[2].vrijednost
         elif self.right_side(IDN, L_ZAGRADA, KR_VOID, D_ZAGRADA):
@@ -1124,6 +1126,7 @@ class Node():
             else:
                 self.scope_structure.add_declaration(self.children[0].lex, 
                     FunctionType([VOID], self.ntip))
+                self.scope_structure.add_l_izraz(self.children[0].lex, 0)
         elif self.right_side(IDN, L_ZAGRADA, LISTA_PARAMETARA, D_ZAGRADA):
             error = self.children[2].provjeri()
             if error:
@@ -1135,6 +1138,7 @@ class Node():
             else:
                 self.scope_structure.add_declaration(self.children[0].lex, 
                     FunctionType(self.children[2].tipovi, self.ntip))
+                self.scope_structure.add_l_izraz(self.children[0].lex, 0)
         return ""
 
     def inicijalizator(self):

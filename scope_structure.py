@@ -11,10 +11,17 @@ class ScopeStructure():
         return
     
 
+    def l_izraz_of_idn_in_scope(self, name):
+        return self.current_scope.l_izraz_of_idn_in_scope(name)
+
+    def add_l_izraz(self, idn, l_izraz):
+        self.current_scope.add_l_izraz(idn, l_izraz)
+        
+
     def idn_name_in_scope(self, name: str):
         return self.current_scope.idn_name_in_scope(name)
-    
-    def idn_name_in_local_scope(self, name: str):
+
+    def idn_name_in_local_scope(self, name):
         return self.current_scope.idn_name_in_local_scope(name)
         
     def type_of_idn_in_scope(self, name):

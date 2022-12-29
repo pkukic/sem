@@ -17,6 +17,7 @@ class Scope():
         self.idn_values = []
         self.scope_type = scope_type
         self.children_function_declarations = {}
+        self.l_izrazi = {}
         return
     
 
@@ -68,6 +69,17 @@ class Scope():
         elif name in self.definitions:
             return self.definitions[name]
         return self.parent_scope.type_of_idn_in_scope(name)
+
+    def l_izraz_of_idn_in_scope(self, name):
+        if name in self.l_izrazi:
+            return self.l_izrazi[name]
+        if self.parent_scope:
+            return self.parent_scope.l_izraz_of_idn_in_scope(name)
+        return None
+
+    def add_l_izraz(self, idn, l_izraz):
+        self.l_izrazi[idn] = l_izraz
+        return
 
     def function_definitions(self):
         local_function_definitions = {k: v for (k, v) in self.definitions.items() if isinstance(self.definitions[k], FunctionType)}
