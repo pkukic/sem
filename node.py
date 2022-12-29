@@ -741,21 +741,25 @@ class Node():
         # s tim da ce se puniti sa deklaracijama kad dodje do LISTA_DEKLARACIJA
         # ako se provjerava tijelo funkcije, onda se parametri funkcije
         # moraju spremiti u scope tijela prvo.
+        flag_new_scope_needed = True
         if lista_identifikatora is not None and lista_tipova is not None:
             child_scope = Scope(self.scope_structure.current_scope, LOCAL)
             self.scope_structure.add_child_scope(child_scope)
             for (idn, tip) in zip(lista_identifikatora, lista_tipova):
                 self.scope_structure.add_declaration(idn, tip)
+            flag_new_scope_needed = False
         
         if self.right_side(L_VIT_ZAGRADA, LISTA_NAREDBI, D_VIT_ZAGRADA):
-            child_scope = Scope(self.scope_structure.current_scope, LOCAL)
-            self.scope_structure.add_child_scope(child_scope)
+            if flag_new_scope_needed:
+                child_scope = Scope(self.scope_structure.current_scope, LOCAL)
+                self.scope_structure.add_child_scope(child_scope)
             error = self.children[1].provjeri()
             if error:
                 return error
         elif self.right_side(L_VIT_ZAGRADA, LISTA_DEKLARACIJA, LISTA_NAREDBI, D_VIT_ZAGRADA):
-            child_scope = Scope(self.scope_structure.current_scope, LOCAL)
-            self.scope_structure.add_child_scope(child_scope)
+            if flag_new_scope_needed:
+                child_scope = Scope(self.scope_structure.current_scope, LOCAL)
+                self.scope_structure.add_child_scope(child_scope)
             error = self.children[1].provjeri()
             if error:
                 return error
@@ -921,7 +925,7 @@ class Node():
             # ako postoji deklaracija imena IDN.ime u globalnom djelokrugu
             # onda je pripadni tip de deklaracije funkcija(void -> <ime_tipa>.tip)
             current_return_type = ime_tipa.tip
-            global_scope = self.scope_structure.global_scope()
+            global_scope = self.scope_structure.current_scope.global_scope()
             if idn.lex in global_scope.declarations:
                 required_type = global_scope.declarations[idn.lex]
                 if required_type != FunctionType([VOID], current_return_type):
@@ -946,8 +950,9 @@ class Node():
             # ime_tipa.tip != CONST(T)
             if is_const_x(ime_tipa.tip):
                 return self.error()
+            global_scope = self.scope_structure.current_scope.global_scope()
             # ne postoji prije definirana funkcija IDN.ime
-            if self.scope_structure.idn_name_in_scope(idn.lex):
+            if global_scope.idn_name_in_scope(idn.lex):
                 return self.error()
             # provjeri(lista_parametara)
             error = lista_parametara.provjeri()
@@ -1123,7 +1128,7 @@ class Node():
             self.tip = array_type
             self.br_elem = self.children[2].vrijednost
         elif self.right_side(IDN, L_ZAGRADA, KR_VOID, D_ZAGRADA):
-            if self.scope_structure.idn_name_in_scope(self.children[0].lex):
+            if self.scope_structure.idn_name_in_local_scope(self.children[0].lex):
                 required_type = self.scope_structure.type_of_idn_in_scope(self.children[0].lex)
                 if required_type != FunctionType([VOID], self.ntip):
                     return self.error()
