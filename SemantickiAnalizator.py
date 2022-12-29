@@ -27,7 +27,7 @@ def main():
         required_main = ('main', FunctionType([VOID], INT))
         if required_main not in defs.items() or required_main not in decs.items():
             print('main')
-        if defs != decs:
+        elif defs != decs:
             print('funkcija')
             
 
