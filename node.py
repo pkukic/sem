@@ -244,7 +244,7 @@ class Node():
             self.tip = NIZ_CONST_CHAR
             self.l_izraz = 0
 
-        elif self.right_side(L_UGL_ZAGRADA, IZRAZ, D_ZAGRADA):
+        elif self.right_side(L_ZAGRADA, IZRAZ, D_ZAGRADA):
             error = self.children[1].provjeri()
             if error:
                 return error
@@ -422,6 +422,8 @@ class Node():
                 return error
             if not explicit_cast(self.children[3].tip, self.children[1].tip):
                 return self.error()
+            self.tip = self.children[1].tip
+            self.l_izraz = 0
         return ""
     
 
