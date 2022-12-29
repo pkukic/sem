@@ -344,7 +344,7 @@ class Node():
             error = self.children[0].provjeri()
             if error:
                 return error
-            self.tipovi.append(self.children[0].tip)
+            self.tipovi = [self.children[0].tip]
 
         elif self.right_side(LISTA_ARGUMENATA, ZAREZ, IZRAZ_PRIDRUZIVANJA):
             error = self.children[0].provjeri()
@@ -853,7 +853,7 @@ class Node():
             error = self.children[4].provjeri()
             if error:
                 return error
-            error = self.children[5].provjeri()
+            error = self.children[6].provjeri()
             if error:
                 return error
         return ""
@@ -912,8 +912,10 @@ class Node():
             if is_const_x(ime_tipa.tip):
                 return self.error()
             # ne postoji prije definirana funcija IDN.ime
-            if self.scope_structure.idn_name_in_scope(idn.lex):
+            if idn.lex in self.scope_structure.all_functions_definitions().keys():
                 return self.error()
+            # if self.scope_structure.idn_name_in_scope(idn.lex):
+            #     return self.error()
             # ako postoji deklaracija imena IDN.ime u globalnom djelokrugu
             # onda je pripadni tip de deklaracije funkcija(void -> <ime_tipa>.tip)
             current_return_type = ime_tipa.tip
@@ -944,7 +946,7 @@ class Node():
                 return self.error()
             global_scope = self.scope_structure.current_scope.global_scope()
             # ne postoji prije definirana funkcija IDN.ime
-            if global_scope.idn_name_in_scope(idn.lex):
+            if idn.lex in self.scope_structure.all_functions_definitions().keys():
                 return self.error()
             # provjeri(lista_parametara)
             error = lista_parametara.provjeri()
@@ -1179,6 +1181,3 @@ class Node():
                 return error
             self.tipovi = self.children[0].tipovi + [self.children[2].tip]
             self.br_elem = self.children[0].br_elem + 1
-
-    
-            

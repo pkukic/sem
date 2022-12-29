@@ -119,6 +119,8 @@ def is_niz_x(niz: str):
 
 
 def make_const(x: str):
+    if x.startswith("const"):
+        return x
     return "const(" + x + ")"
 
 def make_niz(x: str):
