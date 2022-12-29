@@ -1063,7 +1063,8 @@ class Node():
             if is_const_x(self.children[0].tip):
                 return self.error()
             if is_niz_x(self.children[0].tip):
-                return self.error()
+                if is_const_x(remove_niz_from_niz_x(self.children[0].tip)):
+                    return self.error()
         elif self.right_side(IZRAVNI_DEKLARATOR, OP_PRIDRUZI, INICIJALIZATOR):
             error = self.children[0].provjeri(ntip=current_ntip)
             if error:
