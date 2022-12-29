@@ -108,6 +108,8 @@ def remove_const_from_const_x(const_x):
 
 
 def is_const_x(T: str):
+    if not T:
+        return False
     return T.startswith("const")
 
 

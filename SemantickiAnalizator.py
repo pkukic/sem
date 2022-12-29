@@ -21,7 +21,7 @@ def main():
     error = gen_tree.root_node.provjeri()
     if error:
         print(error)
-    defs = gen_tree.root_node.scope_structure.all_functions_declarations()
+    defs = gen_tree.root_node.scope_structure.all_functions_definitions()
     decs = gen_tree.root_node.scope_structure.all_functions_declarations()
     required_main = ('main', FunctionType([VOID], INT))
     if required_main not in defs.items() or required_main not in decs.items():
