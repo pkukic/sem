@@ -1,7 +1,7 @@
 from consts import *
 
 def check_char(char: str):
-    if len(char) == 2:
+    if len(char) == 4:
         valid = False
         if char == '\\t':
             valid = True
@@ -15,7 +15,7 @@ def check_char(char: str):
             valid = True
         elif char == '\\\\':
             valid = True
-    elif len(char) == 1:
+    elif len(char) == 3:
         valid = True
     else:
         valid = False

@@ -692,7 +692,7 @@ class Node():
             self.tip = self.children[0].tip
             self.l_izraz = self.children[0].l_izraz
         
-        elif self.right_side(POSTFIKS_IZRAZ, OP_PRIDUZI, IZRAZ_PRIDRUZIVANJA):
+        elif self.right_side(POSTFIKS_IZRAZ, OP_PRIDRUZI, IZRAZ_PRIDRUZIVANJA):
             error = self.children[0].provjeri()
             if error:
                 return error
@@ -867,8 +867,6 @@ class Node():
                 return error
             t = self.nesting_function_type()
             if (t is None) or (not implicit_cast(self.children[1].tip, t)):
-                print(t)
-                print(self.children[1].tip)
                 return self.error()
         return ""
 
@@ -1061,7 +1059,7 @@ class Node():
                 return self.error()
             if is_niz_x(self.children[0].tip):
                 return self.error()
-        elif self.right_side(IZRAVNI_DEKLARATOR, OP_PRIDUZI, INICIJALIZATOR):
+        elif self.right_side(IZRAVNI_DEKLARATOR, OP_PRIDRUZI, INICIJALIZATOR):
             error = self.children[0].provjeri(ntip=current_ntip)
             if error:
                 return error
@@ -1074,7 +1072,7 @@ class Node():
                 if is_const_x(stripped_type):
                     stripped_type = remove_const_from_const_x(stripped_type)
                 if not implicit_cast(self.children[2].tip, stripped_type):
-                    return self.error()
+                    return self.error() 
             elif is_niz_x(izravni_deklarator_type):
                 stripped_type = remove_niz_from_niz_x(izravni_deklarator_type)
                 if is_const_x(stripped_type):
