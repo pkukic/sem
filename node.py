@@ -309,6 +309,8 @@ class Node():
             for i in range(n):
                 if not implicit_cast(current_types_list[i], required_types_list[i]):
                     self.error()
+            self.tip = self.children[0].tip.return_type
+            self.l_izraz = 0
             return ""
 
 
