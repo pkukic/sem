@@ -714,6 +714,8 @@ class Node():
             error = self.children[0].provjeri()
             if error:
                 return error
+            self.tip = self.children[0].tip
+            self.l_izraz = self.children[0].l_izraz
         elif self.right_side(IZRAZ, ZAREZ, IZRAZ_PRIDRUZIVANJA):
             error = self.children[0].provjeri()
             if error:
