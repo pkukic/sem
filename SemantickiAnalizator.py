@@ -23,14 +23,12 @@ def main():
         print(error)
     defs = gen_tree.root_node.scope_structure.all_functions_definitions()
     decs = gen_tree.root_node.scope_structure.all_functions_declarations()
-    print(defs, decs)
-    # print(f'defs: {defs}')
-    # print(f'decs: {decs}')
-    # required_main = ('main', FunctionType([VOID], INT))
-    # if required_main not in defs.items() or required_main not in decs.items():
-    #     print('main')
-    # if defs != decs:
-    #     print('funkcija')
+    # print(defs, decs)
+    required_main = ('main', FunctionType([VOID], INT))
+    if required_main not in defs.items() or required_main not in decs.items():
+        print('main')
+    if defs != decs:
+        print('funkcija')
             
 
 if __name__ == '__main__':

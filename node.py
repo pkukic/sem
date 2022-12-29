@@ -297,7 +297,7 @@ class Node():
             error = self.children[2].provjeri()
             if error:
                 return error
-            required_types_list = self.children[0].arguments_types
+            required_types_list = self.children[0].tip.arguments_types
             current_types_list = self.children[2].tipovi
             n = len(required_types_list)
             m = len(current_types_list)

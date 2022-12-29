@@ -1,4 +1,5 @@
 from FunctionType import FunctionType
+from consts import GLOBAL
 
 class Scope():
 
@@ -72,4 +73,7 @@ class Scope():
             return local_function_declarations
         return local_function_declarations | self.parent_scope.function_definitions()
 
-
+    def global_scope(self):
+        if self.scope_type == GLOBAL:
+            return self
+        return self.parent_scope.global_scope()
