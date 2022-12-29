@@ -748,20 +748,20 @@ class Node():
                 self.scope_structure.add_declaration(idn, tip)
         
         if self.right_side(L_VIT_ZAGRADA, LISTA_NAREDBI, D_VIT_ZAGRADA):
+            child_scope = Scope(self.scope_structure.current_scope, LOCAL)
+            self.scope_structure.add_child_scope(child_scope)
             error = self.children[1].provjeri()
             if error:
                 return error
+        elif self.right_side(L_VIT_ZAGRADA, LISTA_DEKLARACIJA, LISTA_NAREDBI, D_VIT_ZAGRADA):
             child_scope = Scope(self.scope_structure.current_scope, LOCAL)
             self.scope_structure.add_child_scope(child_scope)
-        elif self.right_side(L_VIT_ZAGRADA, LISTA_DEKLARACIJA, LISTA_NAREDBI, D_VIT_ZAGRADA):
             error = self.children[1].provjeri()
             if error:
                 return error
             error = self.children[2].provjeri()
             if error:
                 return error
-            child_scope = Scope(self.scope_structure.current_scope, LOCAL)
-            self.scope_structure.add_child_scope(child_scope)
         return ""
         
     # <lista_naredbi>
@@ -1135,7 +1135,7 @@ class Node():
             error = self.children[2].provjeri()
             if error:
                 return error
-            if self.scope_structure.idn_name_in_scope(self.children[0].lex):
+            if self.scope_structure.idn_name_in_local_scope(self.children[0].lex):
                 required_type = self.scope_structure.type_of_idn_in_scope(self.children[0].lex)
                 if required_type != FunctionType(self.children[2].tipovi, self.ntip):
                     return self.error()
