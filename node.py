@@ -105,7 +105,7 @@ class Node():
             if p.name not in allowed_parents:
                 return None
             return p.nesting_function_type()
-        return p.children[0].tip.return_type
+        return p.tip.return_type
 
 
     def goes_to_niz_znakova(self):
@@ -931,6 +931,7 @@ class Node():
                 if required_type != FunctionType([VOID], current_return_type):
                     self.error()
             # zabiljezi definiciju i deklaraciju funkcije
+            self.tip = FunctionType([VOID], current_return_type)
             self.scope_structure.add_definition(idn.lex, FunctionType([VOID], current_return_type))
             self.scope_structure.add_declaration(idn.lex, FunctionType([VOID], current_return_type))
             # provjeri(<slozena_naredba>)
