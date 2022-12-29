@@ -16,6 +16,7 @@ class Scope():
         self.definitions = {}
         self.idn_values = []
         self.scope_type = scope_type
+        self.children_function_declarations = {}
         return
     
 
@@ -43,6 +44,7 @@ class Scope():
     def add_declaration(self, idn, type):
         self.declarations[idn] = type
         self.idn_values.append(idn)
+        self.add_child_function_declaration(idn, type)
         return
     
 
@@ -65,13 +67,19 @@ class Scope():
         local_function_definitions = {k: v for (k, v) in self.definitions.items() if isinstance(self.definitions[k], FunctionType)}
         if not self.parent_scope:
             return local_function_definitions
-        return local_function_definitions | self.parent_scope.function_definitions()
+        return {**local_function_definitions, **self.parent_scope.function_definitions()}
 
     def function_declarations(self):
         local_function_declarations = {k: v for (k, v) in self.definitions.items() if isinstance(self.declarations[k], FunctionType)}
         if not self.parent_scope:
-            return local_function_declarations
-        return local_function_declarations | self.parent_scope.function_definitions()
+            return {**local_function_declarations, **self.children_function_declarations} 
+        return {**local_function_declarations, **self.parent_scope.function_definitions()}
+
+    def add_child_function_declaration(self, idn, type):
+        if not self.parent_scope:
+            self.children_function_declarations[idn] = type
+            return
+        self.parent_scope.add_child_function_declaration(idn, type)
 
     def global_scope(self):
         if self.scope_type == GLOBAL:
