@@ -42,14 +42,10 @@ class ScopeStructure():
         return
     
     def global_scope(self):
-        if self.current_scope.scope_type == GLOBAL:
-            return self.current_scope
-        return self.current_scope.parent_scope.global_scope()
+        return self.current_scope.global_scope()
 
     def all_functions_definitions(self):
-        if self.current_scope.scope_type == GLOBAL:
-            return self.current_scope.function_definitions()
+        return self.global_scope().function_definitions()
 
     def all_functions_declarations(self):
-        if self.current_scope.scope_type == GLOBAL:
-            return self.current_scope.function_declarations()
+        return self.global_scope().function_declarations()
