@@ -714,20 +714,6 @@ class Node():
             error = self.children[0].provjeri()
             if error:
                 return error
-    def in_loop(self):
-        p = self.parent_node
-        allowed_parents = [
-            NAREDBA, 
-            LISTA_NAREDBI, 
-            SLOZENA_NAREDBA, 
-            NAREDBA_GRANANJA
-        ]
-        if p.name != NAREDBA_PETLJE:
-            if p.name not in allowed_parents:
-                return False
-            self.tip = self.children[0].tip
-            self.l_izraz = self.children[0].l_izraz
-        
         elif self.right_side(IZRAZ, ZAREZ, IZRAZ_PRIDRUZIVANJA):
             error = self.children[0].provjeri()
             if error:
@@ -880,7 +866,9 @@ class Node():
             if error:
                 return error
             t = self.nesting_function_type()
-            if (t is None) or (not implicit_cast(self.children[1], t)):
+            if (t is None) or (not implicit_cast(self.children[1].tip, t)):
+                print(t)
+                print(self.children[1].tip)
                 return self.error()
         return ""
 
