@@ -8,9 +8,9 @@ class FunctionType:
             self.return_type == other.return_type
     
 
-    def __str__(self):
-        return self.arguments_types + "->" + self.return_type
+    # def __str__(self):
+    #     return self.arguments_types + "->" + self.return_type
     
 
-    def __repr__(self):
-        return self.arguments_types + "->" + self.return_type
+    # def __repr__(self):
+    #     return self.arguments_types + "->" + self.return_type

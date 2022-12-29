@@ -741,25 +741,17 @@ class Node():
         # s tim da ce se puniti sa deklaracijama kad dodje do LISTA_DEKLARACIJA
         # ako se provjerava tijelo funkcije, onda se parametri funkcije
         # moraju spremiti u scope tijela prvo.
-        flag_new_scope_needed = True
+        child_scope = Scope(self.scope_structure.current_scope, LOCAL)
+        self.scope_structure.add_child_scope(child_scope)
         if lista_identifikatora is not None and lista_tipova is not None:
-            child_scope = Scope(self.scope_structure.current_scope, LOCAL)
-            self.scope_structure.add_child_scope(child_scope)
             for (idn, tip) in zip(lista_identifikatora, lista_tipova):
                 self.scope_structure.add_declaration(idn, tip)
-            flag_new_scope_needed = False
         
         if self.right_side(L_VIT_ZAGRADA, LISTA_NAREDBI, D_VIT_ZAGRADA):
-            if flag_new_scope_needed:
-                child_scope = Scope(self.scope_structure.current_scope, LOCAL)
-                self.scope_structure.add_child_scope(child_scope)
             error = self.children[1].provjeri()
             if error:
                 return error
         elif self.right_side(L_VIT_ZAGRADA, LISTA_DEKLARACIJA, LISTA_NAREDBI, D_VIT_ZAGRADA):
-            if flag_new_scope_needed:
-                child_scope = Scope(self.scope_structure.current_scope, LOCAL)
-                self.scope_structure.add_child_scope(child_scope)
             error = self.children[1].provjeri()
             if error:
                 return error
@@ -967,6 +959,7 @@ class Node():
                 if required_type != FunctionType(current_argument_types, current_return_type):
                     return self.error()
             # zabiljezi definiciju i deklaraciju funkcije
+            self.tip = FunctionType(current_argument_types, current_return_type)
             self.scope_structure.add_definition(idn.lex, FunctionType(current_argument_types, current_return_type))
             self.scope_structure.add_declaration(idn.lex, FunctionType(current_argument_types, current_return_type))
             # provjeri(slozena_naredba) uz parametre funkcije
