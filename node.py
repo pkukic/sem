@@ -920,19 +920,19 @@ class Node():
             if is_const_x(ime_tipa.tip):
                 return self.error()
             # ne postoji prije definirana funcija IDN.ime
-            if self.scope_structure.idn_name_in_scope(idn.name):
+            if self.scope_structure.idn_name_in_scope(idn.lex):
                 return self.error()
             # ako postoji deklaracija imena IDN.ime u globalnom djelokrugu
             # onda je pripadni tip de deklaracije funkcija(void -> <ime_tipa>.tip)
             current_return_type = ime_tipa.tip
             global_scope = self.scope_structure.global_scope()
-            if idn.name in global_scope.declarations:
-                required_type = global_scope.declarations[idn.name]
+            if idn.lex in global_scope.declarations:
+                required_type = global_scope.declarations[idn.lex]
                 if required_type != FunctionType([VOID], current_return_type):
                     self.error()
             # zabiljezi definiciju i deklaraciju funkcije
-            self.scope_structure.add_definition(idn.name, FunctionType([VOID], current_return_type))
-            self.scope_structure.add_declaration(idn.name, FunctionType([VOID], current_return_type))
+            self.scope_structure.add_definition(idn.lex, FunctionType([VOID], current_return_type))
+            self.scope_structure.add_declaration(idn.lex, FunctionType([VOID], current_return_type))
             # provjeri(<slozena_naredba>)
             error = self.children[5].provjeri()
             if error:
@@ -950,7 +950,7 @@ class Node():
             if is_const_x(ime_tipa.tip):
                 return self.error()
             # ne postoji prije definirana funkcija IDN.ime
-            if self.scope_structure.idn_name_in_scope(idn.name):
+            if self.scope_structure.idn_name_in_scope(idn.lex):
                 return self.error()
             # provjeri(lista_parametara)
             error = lista_parametara.provjeri()
@@ -960,13 +960,13 @@ class Node():
             # onda je pripadni tip funkcija(lista_param.tipovi -> ime_tipa.tip)
             current_return_type = ime_tipa.tip
             current_argument_types = lista_parametara.tipovi
-            if idn.name in global_scope.declarations:
-                required_type = global_scope.declarations[idn.name]
+            if idn.lex in global_scope.declarations:
+                required_type = global_scope.declarations[idn.lex]
                 if required_type != FunctionType(current_argument_types, current_return_type):
                     return self.error()
             # zabiljezi definiciju i deklaraciju funkcije
-            self.scope_structure.add_definition(idn.name, FunctionType(current_argument_types, current_return_type))
-            self.scope_structure.add_declaration(idn.name, FunctionType(current_argument_types, current_return_type))
+            self.scope_structure.add_definition(idn.lex, FunctionType(current_argument_types, current_return_type))
+            self.scope_structure.add_declaration(idn.lex, FunctionType(current_argument_types, current_return_type))
             # provjeri(slozena_naredba) uz parametre funkcije
             # koristeci <lista_param>.tipovi i <lista_param>.imena
             error = self.children[5].provjeri(lista_identifikatora=lista_parametara.identifikatori, 
@@ -982,7 +982,7 @@ class Node():
             if error:
                 return error
             self.tipovi = [self.children[0].tip]
-            self.identifikatori = [self.children[0].name]
+            self.identifikatori = [self.children[0].lex]
         elif self.right_side(LISTA_PARAMETARA, ZAREZ, DEKLARACIJA_PARAMETRA):
             error = self.children[0].provjeri()
             if error:
@@ -990,10 +990,10 @@ class Node():
             error = self.children[2].provjeri()
             if error:
                 return error
-            if self.children[2].name in self.children[0].identifikatori:
+            if self.children[2].lex in self.children[0].identifikatori:
                 return self.error()
             self.tipovi = self.children[0].tipovi + [self.children[2].tip]
-            self.identifikatori = self.children[0].identifikatori + [self.children[2].name]
+            self.identifikatori = self.children[0].identifikatori + [self.children[2].lex]
         return ""
 
     def deklaracija_parametra(self):
@@ -1004,7 +1004,7 @@ class Node():
             if self.children[0].tip == VOID:
                 return self.error()
             self.tip = self.children[0].tip
-            self.name = self.children[1].name
+            self.lex = self.children[1].lex
         elif self.right_side(IME_TIPA, IDN, L_UGL_ZAGRADA, D_UGL_ZAGRADA):
             error = self.children[0].provjeri()
             if error:
@@ -1012,7 +1012,7 @@ class Node():
             if self.children[0].tip == VOID:
                 return self.error()
             self.tip = make_niz(self.children[0].tip)
-            self.name = self.children[1].name
+            self.lex = self.children[1].lex
         return ""
 
     def lista_deklaracija(self):
@@ -1103,14 +1103,14 @@ class Node():
         if self.right_side(IDN):
             if self.ntip == VOID:
                 return self.error()
-            if self.scope_structure.idn_name_in_scope(self.children[0].name):
+            if self.scope_structure.idn_name_in_scope(self.children[0].lex):
                 return self.error()
-            self.scope_structure.add_declaration(self.children[0].name, self.ntip)
+            self.scope_structure.add_declaration(self.children[0].lex, self.ntip)
             self.tip = self.ntip
         elif self.right_side(IDN, L_UGL_ZAGRADA, BROJ, D_UGL_ZAGRADA):
             if self.ntip == VOID:
                 return self.error()
-            if self.scope_structure.idn_name_in_scope(self.children[0].name):
+            if self.scope_structure.idn_name_in_scope(self.children[0].lex):
                 return self.error()
             if self.children[2].vrijednost is None:
                 return self.error()
@@ -1119,27 +1119,27 @@ class Node():
             elif self.children[2].vrijednost > 1024:
                 return self.error()
             array_type = make_niz(self.ntip)
-            self.scope_structure.add_declaration(self.children[0].name, array_type)
+            self.scope_structure.add_declaration(self.children[0].lex, array_type)
             self.tip = array_type
             self.br_elem = self.children[2].vrijednost
         elif self.right_side(IDN, L_ZAGRADA, KR_VOID, D_ZAGRADA):
-            if self.scope_structure.idn_name_in_scope(self.children[0].name):
-                required_type = self.scope_structure.type_of_idn_in_scope(self.children[0].name)
+            if self.scope_structure.idn_name_in_scope(self.children[0].lex):
+                required_type = self.scope_structure.type_of_idn_in_scope(self.children[0].lex)
                 if required_type != FunctionType([VOID], self.ntip):
                     return self.error()
             else:
-                self.scope_structure.add_declaration(self.children[0].name, 
+                self.scope_structure.add_declaration(self.children[0].lex, 
                     FunctionType([VOID], self.ntip))
         elif self.right_side(IDN, L_ZAGRADA, LISTA_PARAMETARA, D_ZAGRADA):
             error = self.children[2].provjeri()
             if error:
                 return error
-            if self.scope_structure.idn_name_in_scope(self.children[0].name):
-                required_type = self.scope_structure.type_of_idn_in_scope(self.children[0].name)
+            if self.scope_structure.idn_name_in_scope(self.children[0].lex):
+                required_type = self.scope_structure.type_of_idn_in_scope(self.children[0].lex)
                 if required_type != FunctionType(self.children[2].tipovi, self.ntip):
                     return self.error()
             else:
-                self.scope_structure.add_declaration(self.children[0].name, 
+                self.scope_structure.add_declaration(self.children[0].lex, 
                     FunctionType(self.children[2].tipovi, self.ntip))
         return ""
 

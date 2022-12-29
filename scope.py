@@ -47,7 +47,7 @@ class Scope():
 
     def idn_name_in_scope(self, name: str):
         for value in self.idn_values:
-            if value.name == name:
+            if value == name:
                 return True
         if self.parent_scope:
             return self.parent_scope.idn_name_in_scope(name)
