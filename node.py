@@ -307,7 +307,7 @@ class Node():
             if n != m:
                 return self.error()
             for i in range(n):
-                if not implicit_cast(self.current_types_list[i], self.required_types_list[i]):
+                if not implicit_cast(current_types_list[i], required_types_list[i]):
                     self.error()
             return ""
 
